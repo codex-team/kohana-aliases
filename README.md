@@ -1,5 +1,5 @@
 
-# Alias module for Kohana Framework
+# Aliases module for Kohana Framework
 
 This module allows you to make usefull and beautifull URLs for your service. 
 
@@ -48,7 +48,7 @@ Note that module's version does not includes a cache scheme. You may need `memca
 <a href="https://github.com/codex-team/kohana-aliases/">https://github.com/codex-team/kohana-aliases/</a>
 
 
-## About CodeX team
+## About CodeX
 We are small team of Web-developing fans consisting of IFMO students and graduates located in St. Petersburg, Russia. 
 Fell free to give us a feedback on <a href="mailto::team@ifmo.su">team@ifmo.su</a>
 
