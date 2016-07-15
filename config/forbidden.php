@@ -2,7 +2,9 @@
 /**
  * Alias System
  * https://ifmo.su/
+ * Here should be written routes which will be ignored by alias system.
  * @author CodeX team team@ifmo.su
+ * @license MIT
  */
 
     return array(
@@ -10,8 +12,6 @@
             'auth',
             'articles',
             'article',
-            'contests',
-            'contest',
             'admin',
         )
     )
