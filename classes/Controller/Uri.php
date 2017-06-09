@@ -13,7 +13,7 @@ class Controller_Uri extends Controller {
     {
         $route      = $this->request->param('route');
         $sub_action = $this->request->param('subaction');
-        
+
         $model_alias = new Model_Alias();
 
         /**
@@ -35,12 +35,13 @@ class Controller_Uri extends Controller {
         /**
         * Now just execute real action in initial Request instance
         */
-
         $Controller->before();
+
+        if ( !method_exists($Controller, $action_name) ) {
+            throw new HTTP_Exception_404();
+        }
+
         $Controller->$action_name();
         $Controller->after();
     }
 }
-
-
-
