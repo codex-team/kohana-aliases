@@ -1,92 +1,75 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Alias System
- * https://ifmo.su/
- * @author CodeX team team@ifmo.su
- * Khaydarov Murod
+ * Alias System https://github.com/codex-team/kohana-aliases
+ *
+ * @author CodeX Team <team@ifmo.su>
+ * @author Khaydarov Murod
+ * @license MIT
  */
-
 class Model_Alias
 {
     public $uri;
     public $hash_raw;
     public $hash;
-    public $type;
-    public $id;
+    public $target_type;
+    public $target_id;
     public $dt_create;
     public $deprecated;
 
-    public function __construct($uri = null, $type = null, $id = null, $dt_create = null, $deprecated = 0)
+    public function __construct($uri = null, $target_type = null, $target_id = null, $dt_create = null, $deprecated = 0)
     {
-        $this->uri          =   $uri;
-        $this->hash         =   md5( $this->uri );
-        $this->hash_raw     =   md5( $this->uri, true);
-        $this->type         =   $type;
-        $this->id           =   $id;
-        $this->dt_create    =   $dt_create;
-        $this->deprecated   =   $deprecated;
+        $this->uri          = $uri;
+        $this->hash         = md5($this->uri);
+        $this->hash_raw     = md5($this->uri, true);
+        $this->target_type  = $target_type;
+        $this->target_id    = $target_id;
+        $this->dt_create    = $dt_create;
+        $this->deprecated   = $deprecated;
     }
 
-    public function save()
+    private function save()
     {
-        $insert = DB::insert('Aliases',
-            array(
-                'uri',
-                'hash',
-                'type',
-                'id',
-                'dt_create',
-                'deprecated',
-            ))
-            ->values(array(
-                $this->uri,
-                $this->hash_raw,
-                $this->type,
-                $this->id,
-                $this->dt_create,
-                $this->deprecated
-            ))
+        return Dao_Alias::insert()
+            ->set('uri', $this->uri)
+            ->set('hash', $this->hash_raw)
+            ->set('target_type', $this->target_type)
+            ->set('target_id', $this->target_id)
+            ->set('deprecated', $this->deprecated)
+            ->clearcache('hash:'. $this->hash)
             ->execute();
     }
 
-    public static function getAlias($route = null)
+    /**
+     * Return a route name that does not use by input route
+     *
+     * @param string $route
+     * @return string $newRoute
+     */
+    private static function generateAlias($route)
     {
-        $hashedRoute = md5( $route, true );
+        $alias = self::getAlias($route);
 
-        $alias = DB::select()->from('Aliases')
-                                ->where('hash', '=', $hashedRoute)
-                                ->limit(1)
-                                ->execute();
-        
-        return $alias->current();
-    }
+        $hashedRoute = md5($route, true);
 
-    public static function generateAlias($route)
-    {
-        $alias  = self::getAlias( $route );
-
-        $hashedRoute = md5( $route, true );
-
-        /*
+        /**
          * Setting $newAlias [String] = $route as default until we looking for new unengaged alias.
          */
-
         $newAlias = $route;
 
-        if ( isset( $alias ) && Arr::get($alias, 'deprecated') ) {
+        if (isset($alias) && Arr::get($alias, 'deprecated')) {
 
             self::deleteAlias($hashedRoute);
             return $newAlias;
 
-        } elseif ( !empty($alias) && !Arr::get($alias, 'deprecated') ) {
+        } elseif (!empty($alias) && !Arr::get($alias, 'deprecated')) {
 
-            for($index = 1; ; $index++) {
-
+            for($index = 1; ; $index++)
+            {
                 $newAlias = $newAlias.'-'.$index;
-                $aliasExist = self::getAlias($newAlias);
+                $aliasExist = !!self::getAlias($newAlias) || Model_Uri::isSystemAlias($newAlias);
 
-                if ( empty($aliasExist) ) {
+                if (empty($aliasExist)) {
 
                     return $newAlias;
                     break;
@@ -94,10 +77,11 @@ class Model_Alias
                 } else {
 
                     $newAlias = $route;
+
                 }
             }
-        }
-        elseif ( !empty( $alias ) ) {
+
+        } elseif (!empty($alias)) {
 
             $newAlias = $route;
 
@@ -106,94 +90,116 @@ class Model_Alias
         return $newAlias;
     }
 
-
     /**
      * Returns Controller, Action and Id by alias
+     *
      * @param $route [String] - alias from uri
      * @param $sub_action [String] = null - default value
+     *
      * @return array with contorller , action and id
+     *
      * @throws HTTP_Exception_404
      */
-
-    public function getRealRequestParams( $route, $sub_action = null )
+    public function getRealRequestParams($route, $sub_action = null)
     {
         $model_uri = Model_Uri::Instance();
 
-        $alias = self::getAlias( $route );
+        $alias = self::getAlias($route);
 
-        if ( empty($alias) ) {
+        if (empty($alias)) {
+            throw new HTTP_Exception_404('The requested URL '.$route.' was not found on this server.');
+        }
 
-            throw new HTTP_Exception_404();
+        if (empty(Model_Uri::CONTROLLERS_MAP)) {
+            throw new Exception('Controllers map is empty');
+        }
 
+        if (!Arr::get(Model_Uri::CONTROLLERS_MAP, $alias['target_type'])) {
+            throw new Exception('Wrong target type given');
         }
 
         if ($sub_action == null)
             return array(
-                'controller' => 'Controller_' . $model_uri->controllersMap[$alias['type']] . '_' . $model_uri->actionsMap[$model_uri::INDEX],
+                'controller' => 'Controller_' . Model_Uri::CONTROLLERS_MAP[$alias['target_type']] . '_' . Model_Uri::ACTIONS_MAP[$model_uri::INDEX],
                 'action'     => 'action_show',
-                'id'         => $alias['id']
+                'id'         => $alias['target_id']
             );
         else
             return array(
-                'controller' => 'Controller_' . $model_uri->controllersMap[$alias['type']] . '_' . $model_uri->actionsMap[$model_uri::MODIFY],
-                'action'     => 'action_' . $sub_action ,
-                'id'         => $alias['id']
+                'controller' => 'Controller_' . Model_Uri::CONTROLLERS_MAP[$alias['target_type']] . '_' . Model_Uri::ACTIONS_MAP[$model_uri::MODIFY],
+                'action'     => 'action_' . $sub_action,
+                'id'         => $alias['target_id']
             );
     }
 
     /**
-     * Adds new alias to the table Alias
-     * @params $alias [String] Alias, $type [int] - substance type, $deprecated [int] - deprecated alias.
+     * Add new alias
+     *
+     * @param $alias [String] Alias
+     * @param $target_type [int] - substance type
+     * @param $target_id [int] - substance id
+     * @param $deprecated [int] - is alias deprecated
      */
 
-    public static function addAlias($alias, $type, $id, $deprecated = 0)
+    public static function addAlias($alias, $target_type, $target_id, $deprecated = 0)
     {
-        if ( !empty($alias) ) {
-
+        if (!empty($alias)) {
             $newAlias = self::generateAlias($alias);
             $dt_create = DATE::$timezone;
-            $model_alias = new Model_Alias($newAlias, $type, $id, $dt_create, $deprecated);
+            $model_alias = new Model_Alias($newAlias, $target_type, $target_id, $dt_create, $deprecated);
             $model_alias->save();
-
         }
 
-        // Если алиас не создан, то возвращаем идентификатор добавленной сущности
-        return isset( $model_alias->uri ) ? $model_alias->uri : '';
+        return isset($model_alias->uri) ? $model_alias->uri : '';
     }
 
+    public static function getAlias($route = null)
+    {
+        $hashedRoute    = md5($route);
+        $hashedRouteRaw = md5($route, true);
+
+        $alias = Dao_Alias::select()
+            ->where('hash', '=', $hashedRouteRaw)
+            ->limit(1)
+            ->cached(Date::HOUR, 'hash:'.$hashedRoute)
+            ->execute();
+
+        return $alias;
+    }
 
     /**
-     *  Updates Alias and sets Old one deprecated = 1 
-     *  $alias [String] - new uri, $type [Int] - substance type (Model_Uri - $controllersMap), $id [Int]
+     * Updates Alias and sets Old one deprecated = 1
+     * $alias [String] - new uri, $type [Int] - substance type (Model_Uri - $controllersMap), $id [Int]
      */
-
-    public static function updateAlias( $oldAlias = null, $alias, $type, $id )
+    public static function updateAlias($oldAlias = null, $alias, $target_type, $target_id)
     {
         $hashedOldRoute = md5($oldAlias, true);
 
-        $update = DB::update('Aliases')->set(array(
-                'deprecated' => '1',
-            ))
-            ->where('hash', '=', $hashedOldRoute)
+        $update = Dao_Alias::update()
+            ->set('deprecated', 1)
+            ->where('hash', '=', $hashedOldRouteRaw)
+            ->clearcache('hash:'.$hashedOldRoute)
             ->execute();
 
-        return self::addAlias($alias, $type, $id);
+        return self::addAlias($alias, $target_type, $target_id);
     }
 
-    public static function deleteAlias( $hash_raw )
+    public static function deleteAlias($hash_raw)
     {
-        $delete = DB::delete('Aliases')
-                ->where('hash', '=', $hash_raw)
-                ->execute();
+        $delete = Dao_Alias::delete()
+            ->where('hash', '=', $hash_raw)
+            ->clearcache('hash:'.$hash)
+            ->execute();
 
         return $delete;
     }
 
-
-    public static function generateUri( $string )
+    public static function generateUri($string)
     {
-        $converted_string = self::rus2translit( $string );
+        // transliterator
+        $converted_string = self::rus2translit($string);
 
+        // replace all other symbols to hyphen
         $converted_string = preg_replace("/[^0-9a-zA-Z]/", "-", $converted_string);
 
         // replace several hyphen to one
@@ -202,13 +208,15 @@ class Model_Alias
         // trim hyphen from borders
         $converted_string = trim($converted_string, '-');
 
-        return strtolower( $converted_string );
+        return strtolower($converted_string);
     }
 
     /**
-     * @param string $string - строка с киррилицей
+     * @param string $string
+     * @return string $converted_string
      */
-    public static function rus2translit($string) {
+    private static function rus2translit($string)
+    {
         $converter = array(
             'а' => 'a',   'б' => 'b',   'в' => 'v',
             'г' => 'g',   'д' => 'd',   'е' => 'e',
@@ -221,6 +229,7 @@ class Model_Alias
             'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
             'ь' => "",    'ы' => 'y',   'ъ' => "",
             'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
+
             'А' => 'A',   'Б' => 'B',   'В' => 'V',
             'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
             'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
@@ -232,28 +241,11 @@ class Model_Alias
             'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
             'Ь' => "",    'Ы' => 'Y',   'Ъ' => "",
             'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
-            ' ' => '_',   '-' => '_',   '-' => '_',    '.' => '_',
-            ',' => '_',   '\'' => '',   '\"' => '',    '(' => '_', ')' => '_',
-            '?' => '_',   '#' => '_',   '$' => '_',    '!' => '_',
-            '@' => '_',   '%' => '^',   '&' => '_',    '*' => '_',
-            '`' => '_',   '\\' => '_',  '/' => '_'//,    '*' => '_'
         );
 
-        // translit
-        $tmp = strtr($string, $converter);
+        $converted_string = strtr($string, $converter);
 
-        // remove underline from begin and end of line
-        $tmp = trim($tmp, "_");
-
-        // replace lines
-        $tmp = strtr($tmp, array(
-            "__"    => "_",
-            "___"   => "_",
-            "____"  => "_",
-            "_____" => "_",
-        ));
-
-        return $tmp;
+        return $converted_string;
     }
 
 }

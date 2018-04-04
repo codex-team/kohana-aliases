@@ -1,27 +1,27 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Alias System
- * https://ifmo.su/
- * @author CodeX team team@ifmo.su
- * Khaydarov Murod
+ * Alias System https://github.com/codex-team/kohana-aliases
+ *
+ * @author CodeX Team <team@ifmo.su>
+ * @author Khaydarov Murod
  */
 
-$STRING = '[-a-z\d]+';
+$STRING = '[0-9a-zA-Z]*';
 
 Route::prepend('URI', '<route>(/<subaction>)', array(
-    'route' => $STRING,
+        'route' => $STRING,
     ))
-    ->filter( function(Route $route, $params, Request $request ) {
-        $alias = $params['route'];
-        $model_uri = Model_Uri::Instance();
+    ->filter(
+        function (Route $route, $params, Request $request)
+        {
+            $alias = $params['route'];
 
-        if ( $model_uri->isForbidden($alias) ) {
-            return false;
+            if (Model_Uri::isSystemAlias($alias)) {
+                return false;
+            }
         }
-
-    })
-    ->defaults(array(
+    )->defaults(array(
         'controller' => 'Uri',
         'action' => 'get',
     ));
