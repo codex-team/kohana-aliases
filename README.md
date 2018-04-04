@@ -1,8 +1,8 @@
 # Aliases module for Kohana Framework
 
-This module allows you to make usefull and beautifull URLs for your service.
+This module allows you to make useful and beautiful URLs for your service.
 
-You don't need more `/user/<id>` or `/article/<id>` cursors in routes. Now you can use simply `/donald` and `/victory` or `/pokemon-go` like addresses for different resources.
+You need no more `/user/<id>` or `/article/<id>` cursors in routes. Now you can use simply `/donald` and `/victory` or `/pokemon-go` like addresses for different resources.
 
 ## User Guide
 Article describing this HMVC feature placed on our website <a href="https://ifmo.su/alias-system">https://ifmo.su/alias-system</a>
@@ -15,7 +15,7 @@ Kohana::modules(array(
 ));
 ```
 
-All you need after is to incule alias creation and updating at your logic:
+All you need after is to include alias creation and updating at your logic:
 
 ### Creating
 
