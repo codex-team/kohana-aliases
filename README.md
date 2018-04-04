@@ -2,7 +2,7 @@
 
 This module allows you to make useful and beautiful URLs for your service.
 
-You need no more `/user/<id>` or `/article/<id>` cursors in routes. Now you can use simply `/donald` and `/victory` or `/pokemon-go` like addresses for different resources.
+You don't need more `/user/<id>` or `/article/<id>` cursors in routes. Now you can use simply `/donald` and `/victory` or `/pokemon-go` like addresses for different resources.
 
 ## User Guide
 Article describing this HMVC feature placed on our website <a href="https://ifmo.su/alias-system">https://ifmo.su/alias-system</a>
@@ -17,7 +17,7 @@ Kohana::modules(array(
 
 All you need after is to include alias creation and updating at your logic:
 
-### Creating
+### Resource creation
 
 ```php
 $alias         = Model_Alias::generateUri( $uri );
@@ -27,7 +27,7 @@ $resource_id   = 12345;
 $article->uri = Model_Alias::addAlias($alias, $resource_type , $resource_id);
 ```
 
-### Updating
+### Resource updating
 
 ```php
 $resource_id   = $article->id;
