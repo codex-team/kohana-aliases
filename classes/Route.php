@@ -10,7 +10,6 @@
  * @copyright     (c) 2012 Micheal Morgan
  * @license       MIT
  */
-
 class Route extends Kohana_Route
 {
     /**
@@ -29,12 +28,10 @@ class Route extends Kohana_Route
      * @param   array    regex patterns for route keys
      * @return  Route
      */
-
     public static function prepend($name, $uri_callback = NULL, $regex = NULL)
     {
         // Ensure entry does not already exist so it can be added to the beginning of the stack
-        if (isset(Route::$_routes[$name]))
-        {
+        if (isset(Route::$_routes[$name])) {
             unset(Route::$_routes[$name]);
         }
 

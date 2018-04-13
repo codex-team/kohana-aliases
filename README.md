@@ -15,7 +15,7 @@ Kohana::modules(array(
 ));
 ```
 
-All you need after is to include alias creation and updating at your logic:
+All you need after is to include aliases creation and update methods into your logic.
 
 ### Resource creation
 
@@ -41,7 +41,7 @@ $article->uri = Model_Alias::updateAlias($old_uri, $new_uri, Model_Uri::ARTICLE,
 
 ## What about cache
 
-Note that module's version does not includes a cache scheme. You may need `memcache` or another driver to add this feature.
+Note that module's version does not include a cache scheme. You may need `memcache` or another driver to add this feature.
 
 ## Repository
 <a href="https://github.com/codex-team/kohana-aliases/">https://github.com/codex-team/kohana-aliases/</a>

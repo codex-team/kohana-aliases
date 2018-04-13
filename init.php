@@ -1,22 +1,18 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
+$STRING = '[0-9a-zA-Z-]*';
+
 /**
- * Alias System https://github.com/codex-team/kohana-aliases
- *
- * @author CodeX Team <team@ifmo.su>
- * @author Khaydarov Murod
+ * Process request by uri with Uri controller
  */
-
-$STRING = '[0-9a-zA-Z]*';
-
-Route::prepend('URI', '<route>(/<subaction>)', array(
-        'route' => $STRING,
-    ))
-    ->filter(
-        function (Route $route, $params, Request $request)
-        {
-            $alias = $params['route'];
-
+Route::prepend('URI', '<alias>(/<subaction>)', array(
+        'alias' => $STRING,
+    ))->filter(
+        function (Route $route, $params, Request $request) {
+            $alias = $params['alias'];
+            /**
+             * If this uri is a system Alias then process it as usual
+             */
             if (Model_Uri::isSystemAlias($alias)) {
                 return false;
             }
