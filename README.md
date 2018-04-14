@@ -66,7 +66,17 @@ If you have entity `User`, then create two controllers
 
 All you need after is to include aliases creation and update methods into your logic.
 
-### Resource creation
+### Set system routes
+
+If you need to define some system routes and their controllers then use [config/system-aliases.php](config/system-aliases.php) file.
+
+Lock any count of system uries by adding them to array.
+
+### Database
+
+Migrations for Aliases table in MySQL database migrations are in the [migrations/Aliases.sql](migrations/Aliases.sql) file.
+
+### Create a new alias
 
 ```php
 $alias         = Model_Aliases::generateUri($uri);
@@ -76,7 +86,7 @@ $resource_id   = 12345;
 $article->uri = Model_Aliases::addAlias($alias, $resource_type, $resource_id);
 ```
 
-### Resource updating
+### Update alias
 
 ```php
 $resource_id   = $article->id;
@@ -86,6 +96,8 @@ $resource_type = Aliases_Controller::ARTICLE;
 
 $article->uri = Model_Aliases::updateAlias($old_uri, $new_uri, $resource_type, $resource_id);
 ```
+
+### Remove alias
 
 ## What about cache
 
