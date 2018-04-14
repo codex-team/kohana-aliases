@@ -98,4 +98,4 @@ Note that module's version does not include a cache scheme. You may need `memcac
 ## About CodeX
 
 We are small team of Web-developing fans consisting of IFMO students and graduates located in St. Petersburg, Russia.
-Fell free to give us a feedback on <a href="mailto::team@ifmo.su">team@ifmo.su</a>
+Feel free to give us a feedback on <a href="mailto::team@ifmo.su">team@ifmo.su</a>
