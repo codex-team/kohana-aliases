@@ -43,7 +43,7 @@ const MAP = array(
 );
 ```
 
-It means thaе entity `ARTICLE` will be handled by controller with name `Articles`.
+It means that entity `ARTICLE` will be handled by controller with name `Articles`.
 
 #### Subcontrollers
 
