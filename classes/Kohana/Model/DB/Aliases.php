@@ -15,8 +15,6 @@ class Kohana_Model_DB_Aliases
      * @param int     $deprecated
      *
      * @return object
-     *
-     * @
      */
     public static function insert($uri, $hash, $type, $id, $dt_create, $deprecated = 0)
     {
@@ -27,16 +25,14 @@ class Kohana_Model_DB_Aliases
             'id',
             'dt_create',
             'deprecated',
-        ))
-                    ->values(array(
-                        $uri,
-                        $hash,
-                        $type,
-                        $id,
-                        $dt_create,
-                        $deprecated
-                    ))
-                    ->execute();
+        ))->values(array(
+            $uri,
+            $hash,
+            $type,
+            $id,
+            $dt_create,
+            $deprecated
+        ))->execute();
 
         return $result;
     }
@@ -67,9 +63,12 @@ class Kohana_Model_DB_Aliases
      */
     public static function update($hash)
     {
-        $update = DB::update(self::$tableName)->set(array(
+        $data = array(
             'deprecated' => '1',
-        ))
+        );
+
+        $update = DB::update(self::$tableName)
+                    ->set($data)
                     ->where('hash', '=', $hash)
                     ->execute();
 

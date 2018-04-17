@@ -23,8 +23,7 @@ class Kohana_Controller_Uri extends Controller
         /**
          * Get Controller, Action and Id we looking for
          */
-        $model_alias = new Model_Aliases();
-        $realRequest = $model_alias->getRealRequestParams($alias, $subAction);
+        $realRequest = Model_Aliases::getRealRequestParams($alias, $subAction);
 
         $controller_name = $realRequest['controller'];
         $action_name = $realRequest['action'];

@@ -9,15 +9,7 @@ class Kohana_Model_Aliases
     public $dt_create;
     public $deprecated;
 
-    public function __construct($uri = null, $type = null, $id = null, $dt_create = null, $deprecated = 0)
-    {
-        $this->uri          = $uri;
-        $this->hash         = self::createRawHash($this->uri);
-        $this->target_type  = $type;
-        $this->target_id    = $id;
-        $this->dt_create    = $dt_create;
-        $this->deprecated   = $deprecated;
-    }
+    public function __construct() {}
 
     /**
      * Return a route name that does not use by input route
@@ -83,7 +75,7 @@ class Kohana_Model_Aliases
      * @throws Aliases_HTTP_Exception_404
      * @throws Aliases_Exception
      */
-    public function getRealRequestParams($route, $action = null)
+    public static function getRealRequestParams($route, $action = null)
     {
         /**
          * Find route row in database
@@ -136,29 +128,27 @@ class Kohana_Model_Aliases
      * @param string $alias         Alias
      * @param integer $type         Substance type
      * @param integer $id           Substance id
-     * @param integer $deprecated   Is this alias deprecated
      *
      * @return string
      *
      * @throws Kohana_Exception
      */
-    public static function addAlias($alias, $type, $id, $deprecated = 0)
+    public static function addAlias($alias, $type, $id)
     {
         if ( ! empty($alias)) {
             $newAlias = self::generateAlias($alias);
             $dt_create = DATE::$timezone;
-            $model_alias = new Model_Aliases($newAlias, $type, $id, $dt_create, $deprecated);
             $hash = self::createRawHash($newAlias);
-            Model_DB_Aliases::insert($newAlias, $hash, $type, $id, $dt_create);
+            $alias = Model_DB_Aliases::insert($newAlias, $hash, $type, $id, $dt_create);
         }
 
-        return isset($model_alias->uri) ? $model_alias->uri : '';
+        return isset($alias->uri) ? $alias->uri : '';
     }
 
     /**
      * @param string $route
      *
-     * @return array
+     * @return object
      */
     public static function getAlias($route)
     {

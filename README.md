@@ -43,7 +43,7 @@ const MAP = array(
 );
 ```
 
-It means than entity `ARTICLE` requires controller with name `Articles`.
+It means thaе entity `ARTICLE` will be handled by controller with name `Articles`.
 
 #### Subcontrollers
 
@@ -62,15 +62,13 @@ If you have entity `User`, then create two controllers
 
 2. To do any editions as adding, deleting. Uri: `/my-great-article/edit` or `/not-a-good-user/ban`
 
-`Controller/Users/Modify.php` with all other actions e.g. `action_add`, `action_edit`, `action_delete`.
+`Controller/Users/Modify.php` with all other actions e.g. `action_edit`, `action_ban`, `action_delete`.
 
-All you need after is to include aliases creation and update methods into your logic.
+All you need after is to include aliases creation and updating methods into your logic.
 
 ### Set system routes
 
-If you need to define some system routes and their controllers then use [config/system-aliases.php](config/system-aliases.php) file.
-
-Lock any count of system uries by adding them to array.
+If you want to set up system routes for your site or block some which shouldn't be allowed to use as alias. Then use [config/system-aliases.php](config/system-aliases.php) file. Lock any count of system URIs by adding them to the array.
 
 ### Database
 
