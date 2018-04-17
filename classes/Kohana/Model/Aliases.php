@@ -2,10 +2,7 @@
 
 class Kohana_Model_Aliases
 {
-    public static $tableName = 'Aliases';
-
     public $uri;
-    public $hash_raw;
     public $hash;
     public $type;
     public $id;
@@ -15,98 +12,11 @@ class Kohana_Model_Aliases
     public function __construct($uri = null, $type = null, $id = null, $dt_create = null, $deprecated = 0)
     {
         $this->uri          = $uri;
-        $this->hash         = md5($this->uri);
-        $this->hash_raw     = md5($this->uri, true);
+        $this->hash         = self::createRawHash($this->uri);
         $this->target_type  = $type;
         $this->target_id    = $id;
         $this->dt_create    = $dt_create;
         $this->deprecated   = $deprecated;
-    }
-
-    /**
-     * Insert a new one alias to database
-     *
-     * @param string  $uri
-     * @param string  $hash
-     * @param integer $type
-     * @param integer $id
-     * @param integer $dt_create
-     * @param int     $deprecated
-     *
-     * @return object
-     */
-    public function insert($uri, $hash, $type, $id, $dt_create, $deprecated = 0)
-    {
-        $result = DB::insert(self::$tableName, array(
-            'uri',
-            'hash',
-            'type',
-            'id',
-            'dt_create',
-            'deprecated',
-        ))
-                    ->values(array(
-                        $uri,
-                        $hash,
-                        $type,
-                        $id,
-                        $dt_create,
-                        $deprecated
-                    ))
-                    ->execute();
-
-        return $result;
-    }
-
-    /**
-     * Find route in database
-     *
-     * @param string $hash
-     *
-     * @return object
-     */
-    public function select($hash)
-    {
-        $alias = DB::select()->from(self::$tableName)
-                   ->where('hash', '=', $hash)
-                   ->limit(1)
-                   ->execute();
-
-        return $alias->current();
-    }
-
-    /**
-     * Set route as deprecated
-     *
-     * @param string $hash
-     *
-     * @return object
-     */
-    public function update($hash)
-    {
-        $update = DB::update(self::$tableName)->set(array(
-            'deprecated' => '1',
-        ))
-                    ->where('hash', '=', $hash)
-                    ->execute();
-
-        return $update;
-    }
-
-    /**
-     * Delete route from database
-     *
-     * @param string $hash
-     *
-     * @return object
-     */
-    public function delete($hash)
-    {
-        $result = DB::delete(self::$tableName)
-                    ->where('hash', '=', $hash)
-                    ->execute();
-
-        return $result;
     }
 
     /**
@@ -239,7 +149,7 @@ class Kohana_Model_Aliases
             $dt_create = DATE::$timezone;
             $model_alias = new Model_Aliases($newAlias, $type, $id, $dt_create, $deprecated);
             $hash = self::createRawHash($newAlias);
-            $model_alias->insert($newAlias, $hash, $type, $id, $dt_create);
+            Model_DB_Aliases::insert($newAlias, $hash, $type, $id, $dt_create);
         }
 
         return isset($model_alias->uri) ? $model_alias->uri : '';
@@ -248,15 +158,13 @@ class Kohana_Model_Aliases
     /**
      * @param string $route
      *
-     * @return object
+     * @return array
      */
     public static function getAlias($route)
     {
         $hashedRoute = self::createRawHash($route);
 
-        $model = new self();
-
-        return $model->select($hashedRoute);
+        return Model_DB_Aliases::select($hashedRoute);
     }
 
     /**
@@ -278,8 +186,7 @@ class Kohana_Model_Aliases
         /**
          * Set current Alias as deprecated
          */
-        $model = new self();
-        $model->update($hashedOldRoute);
+        Model_DB_Aliases::update($hashedOldRoute);
 
         /**
          * Add a new one
@@ -298,9 +205,7 @@ class Kohana_Model_Aliases
      */
     public static function deleteAlias($hash)
     {
-        $model = new self();
-
-        return $model->delete($hash);
+        return Model_DB_Aliases::delete($hash);
     }
 
     /**
