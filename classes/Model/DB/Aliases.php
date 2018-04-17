@@ -6,7 +6,7 @@ class Model_DB_Aliases extends Kohana_Model_DB_Aliases
      * Insert a new one alias to database
      *
      * @param string  $uri
-     * @param string  $hash
+     * @param string  $hash         binary hash for route
      * @param integer $type
      * @param integer $id
      * @param integer $dt_create
@@ -22,7 +22,7 @@ class Model_DB_Aliases extends Kohana_Model_DB_Aliases
     /**
      * Find route in database
      *
-     * @param string $hash
+     * @param string $hash binary hash for route
      *
      * @return object
      */
@@ -34,7 +34,7 @@ class Model_DB_Aliases extends Kohana_Model_DB_Aliases
     /**
      * Set route as deprecated
      *
-     * @param string $hash
+     * @param string $hash binary hash for route
      *
      * @return object
      */
@@ -46,7 +46,7 @@ class Model_DB_Aliases extends Kohana_Model_DB_Aliases
     /**
      * Delete route from database
      *
-     * @param string $hash
+     * @param string $hash binary hash for route
      *
      * @return object
      */

@@ -107,7 +107,9 @@ Model_Aliases::deleteAlias($hash);
 
 ## Database and cache
 
+You can create a `Model_DB_Aliases` class and create your own function to work with database e.g. for use caching system.
 
+Copy file [classes/Model/DB/Aliases.php](classes/Model/DB/Aliases.php) and rewrite functions.
 
 ## Repository
 
