@@ -1,25 +1,22 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
+
+$STRING = '[0-9a-z-]*';
 
 /**
- * Alias System
- * https://ifmo.su/
- * @author CodeX team team@ifmo.su
- * Khaydarov Murod
+ * Process request by uri with Uri controller
  */
-
-$STRING = '[-a-z\d]+';
-
-Route::prepend('URI', '<route>(/<subaction>)', array(
-    'route' => $STRING,
+Route::prepend('URI', '<alias>(/<subaction>)', array(
+        'alias' => $STRING,
     ))
-    ->filter( function(Route $route, $params, Request $request ) {
-        $alias = $params['route'];
-        $model_uri = Model_Uri::Instance();
+    ->filter(function (Route $route, $params, Request $request) {
+        $alias = $params['alias'];
 
-        if ( $model_uri->isForbidden($alias) ) {
+        /**
+         * If this uri is a system Alias then process it as usual
+         */
+        if (Model_Uri::isSystemAlias($alias)) {
             return false;
         }
-
     })
     ->defaults(array(
         'controller' => 'Uri',
