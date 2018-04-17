@@ -140,9 +140,13 @@ class Kohana_Model_Aliases
             $dt_create = DATE::$timezone;
             $hash = self::createRawHash($newAlias);
             $alias = Model_DB_Aliases::insert($newAlias, $hash, $type, $id, $dt_create);
+
+            if ($alias) {
+                return $newAlias;
+            }
         }
 
-        return isset($alias->uri) ? $alias->uri : '';
+        return '';
     }
 
     /**
