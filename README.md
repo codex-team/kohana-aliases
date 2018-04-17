@@ -99,9 +99,15 @@ $article->uri = Model_Aliases::updateAlias($old_uri, $new_uri, $resource_type, $
 
 ### Remove alias
 
-## What about cache
+```php
+$hash = Model_Aliases::createRawHash($route);
 
-Note that module's version does not include a cache scheme. You may need `memcache` or another driver to add this feature.
+Model_Aliases::deleteAlias($hash);
+```
+
+## Database and cache
+
+
 
 ## Repository
 

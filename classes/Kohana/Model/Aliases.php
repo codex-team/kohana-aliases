@@ -2,7 +2,7 @@
 
 class Kohana_Model_Aliases
 {
-    private static $tableName = 'Aliases';
+    public static $tableName = 'Aliases';
 
     public $uri;
     public $hash_raw;
@@ -23,25 +23,88 @@ class Kohana_Model_Aliases
         $this->deprecated   = $deprecated;
     }
 
-    private function save()
+    /**
+     * Insert a new one alias to database
+     *
+     * @param string  $uri
+     * @param string  $hash
+     * @param integer $type
+     * @param integer $id
+     * @param integer $dt_create
+     * @param int     $deprecated
+     *
+     * @return object
+     */
+    public function insert($uri, $hash, $type, $id, $dt_create, $deprecated = 0)
     {
         $result = DB::insert(self::$tableName, array(
-                'uri',
-                'hash',
-                'type',
-                'id',
-                'dt_create',
-                'deprecated',
-            ))
-            ->values(array(
-                $this->uri,
-                $this->hash_raw,
-                $this->target_type,
-                $this->target_id,
-                $this->dt_create,
-                $this->deprecated
-            ))
-            ->execute();
+            'uri',
+            'hash',
+            'type',
+            'id',
+            'dt_create',
+            'deprecated',
+        ))
+                    ->values(array(
+                        $uri,
+                        $hash,
+                        $type,
+                        $id,
+                        $dt_create,
+                        $deprecated
+                    ))
+                    ->execute();
+
+        return $result;
+    }
+
+    /**
+     * Find route in database
+     *
+     * @param string $hash
+     *
+     * @return object
+     */
+    public function select($hash)
+    {
+        $alias = DB::select()->from(self::$tableName)
+                   ->where('hash', '=', $hash)
+                   ->limit(1)
+                   ->execute();
+
+        return $alias->current();
+    }
+
+    /**
+     * Set route as deprecated
+     *
+     * @param string $hash
+     *
+     * @return object
+     */
+    public function update($hash)
+    {
+        $update = DB::update(self::$tableName)->set(array(
+            'deprecated' => '1',
+        ))
+                    ->where('hash', '=', $hash)
+                    ->execute();
+
+        return $update;
+    }
+
+    /**
+     * Delete route from database
+     *
+     * @param string $hash
+     *
+     * @return object
+     */
+    public function delete($hash)
+    {
+        $result = DB::delete(self::$tableName)
+                    ->where('hash', '=', $hash)
+                    ->execute();
 
         return $result;
     }
@@ -59,7 +122,7 @@ class Kohana_Model_Aliases
     {
         $alias = self::getAlias($route);
 
-        $hashedRoute = md5($route, true);
+        $hashedRoute = self::createRawHash($route);
 
         /**
          * This alias is free to use. Return $route back
@@ -166,6 +229,8 @@ class Kohana_Model_Aliases
      * @param integer $deprecated   Is this alias deprecated
      *
      * @return string
+     *
+     * @throws Kohana_Exception
      */
     public static function addAlias($alias, $type, $id, $deprecated = 0)
     {
@@ -173,27 +238,25 @@ class Kohana_Model_Aliases
             $newAlias = self::generateAlias($alias);
             $dt_create = DATE::$timezone;
             $model_alias = new Model_Aliases($newAlias, $type, $id, $dt_create, $deprecated);
-            $model_alias->save();
+            $hash = self::createRawHash($newAlias);
+            $model_alias->insert($newAlias, $hash, $type, $id, $dt_create);
         }
 
         return isset($model_alias->uri) ? $model_alias->uri : '';
     }
 
     /**
-     * @param null $route
+     * @param string $route
      *
-     * @return @todo
+     * @return object
      */
-    public static function getAlias($route = null)
+    public static function getAlias($route)
     {
-        $hashedRoute = md5($route, true);
+        $hashedRoute = self::createRawHash($route);
 
-        $alias = DB::select()->from(self::$tableName)
-           ->where('hash', '=', $hashedRoute)
-           ->limit(1)
-           ->execute();
+        $model = new self();
 
-        return $alias->current();
+        return $model->select($hashedRoute);
     }
 
     /**
@@ -204,18 +267,23 @@ class Kohana_Model_Aliases
      * @param integer $type     substance type
      * @param integer $id       substance id
      *
-     * @return @todo
+     * @return string
+     *
+     * @throws Kohana_Exception
      */
     public static function updateAlias($oldAlias, $alias, $type, $id)
     {
-        $hashedOldRoute = md5($oldAlias, true);
+        $hashedOldRoute = self::createRawHash($oldAlias);
 
-        $update = DB::update(self::$tableName)->set(array(
-                'deprecated' => '1',
-            ))
-            ->where('hash', '=', $hashedOldRoute)
-            ->execute();
+        /**
+         * Set current Alias as deprecated
+         */
+        $model = new self();
+        $model->update($hashedOldRoute);
 
+        /**
+         * Add a new one
+         */
         $addedAlias = self::addAlias($alias, $type, $id);
 
         return $addedAlias;
@@ -230,11 +298,21 @@ class Kohana_Model_Aliases
      */
     public static function deleteAlias($hash)
     {
-        $result = DB::delete(self::$tableName)
-            ->where('hash', '=', $hash)
-            ->execute();
+        $model = new self();
 
-        return $result;
+        return $model->delete($hash);
+    }
+
+    /**
+     * Return route hashed to raw binary string
+     *
+     * @param $route
+     *
+     * @return string
+     */
+    private static function createRawHash($route)
+    {
+        return md5($route, true);
     }
 
     /**
