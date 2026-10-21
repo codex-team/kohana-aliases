@@ -34,6 +34,6 @@ class Kohana_Model_Uri
      */
     private function __construct() {}
     private function __clone() {}
-    private function __sleep() {}
-    private function __wakeup() {}
+    public function __sleep() {}
+    public function __wakeup() {}
 }
